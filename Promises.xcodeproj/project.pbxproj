@@ -10,6 +10,8 @@
 		8209EB1E1D5132E200FD10BE /* Promises.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8209EB141D5132E200FD10BE /* Promises.framework */; };
 		8209EB231D5132E200FD10BE /* PromisesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8209EB221D5132E200FD10BE /* PromisesTests.swift */; };
 		8209EB251D5132E200FD10BE /* Promises.h in Headers */ = {isa = PBXBuildFile; fileRef = 8209EB171D5132E200FD10BE /* Promises.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8209EB2F1D51333800FD10BE /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8209EB2E1D51333800FD10BE /* Promise.swift */; };
+		8209EB301D51333800FD10BE /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8209EB2E1D51333800FD10BE /* Promise.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +31,7 @@
 		8209EB1D1D5132E200FD10BE /* PromisesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PromisesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8209EB221D5132E200FD10BE /* PromisesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromisesTests.swift; sourceTree = "<group>"; };
 		8209EB241D5132E200FD10BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8209EB2E1D51333800FD10BE /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +76,7 @@
 			children = (
 				8209EB171D5132E200FD10BE /* Promises.h */,
 				8209EB181D5132E200FD10BE /* Info.plist */,
+				8209EB2E1D51333800FD10BE /* Promise.swift */,
 			);
 			path = Promises;
 			sourceTree = "<group>";
@@ -150,6 +154,7 @@
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = V8Q89MNV2B;
 						DevelopmentTeamName = "Iukhym Goncharuk (Personal Team)";
+						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 					};
 					8209EB1C1D5132E200FD10BE = {
@@ -200,6 +205,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8209EB2F1D51333800FD10BE /* Promise.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,6 +214,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8209EB231D5132E200FD10BE /* PromisesTests.swift in Sources */,
+				8209EB301D51333800FD10BE /* Promise.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,6 +324,7 @@
 		8209EB291D5132E200FD10BE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
@@ -330,6 +338,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.Promises;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -337,6 +346,7 @@
 		8209EB2A1D5132E200FD10BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;

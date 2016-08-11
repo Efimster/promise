@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "Promise.onFulfilled(value : A) -&gt; ():Promise.swift">
+      </ContextState>
+      <ContextState
+         contextName = "Promise.init((resolve : (A) -&gt; ()) -&gt; ()) -&gt; Promise&lt;A&gt;:Promise.swift">
+      </ContextState>
+      <ContextState
+         contextName = "PromisesTests.testPromiseShouldPerformDeferedFulfilmentInThenFunction() -&gt; ():PromisesTests.swift">
+      </ContextState>
+      <ContextState
+         contextName = "PromisesTests.(testPromiseShouldPerformDeferedFulfilmentInThenFunction() -&gt; ()).(closure #1).(closure #1):PromisesTests.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "p1">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PromisesTests.(testPromiseShouldPerformDeferedFulfilmentInThenFunction() -&gt; ()).(closure #1):PromisesTests.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
