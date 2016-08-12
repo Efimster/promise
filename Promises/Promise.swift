@@ -3,7 +3,7 @@
 //  Promises
 //
 //  Created by Iukhym Goncharuk on 8/2/16.
-//  Copyright © 2016 Iukhym Goncharuk. All rights reserved.
+//  Copyright © 2016 Efim Goncharuk. All rights reserved.
 //
 
 import Foundation
@@ -14,18 +14,14 @@ class Promise<T>{
     var rejectReason:Error? = nil
     var state:State = .pending
     var fulfilmentHandler:((_:T)->Promise<T>)?
-    var rejectionHandler:((error:Error)->Void)?
-    var fulfillmentUpChainPromise:Promise<T>?
+    var rejectionHandler:((error:Error)->Promise<T>)?
+    var upChainPromise:Promise<T>?
     
     //MARK: static functions
     
     static func all(){}
     static func race(){}
-//    static func reject(reason:ErrorProtocol)->Promise<T>{
-//        let promise = Promise()
-//        promise.onReject(reason: reason)
-//        return promise
-//    }
+
     
     static func resolve(value:T)->Promise<T>{
         let promise = Promise()
@@ -37,6 +33,10 @@ class Promise<T>{
     
     private init() {
         
+    }
+    
+    init(_ executor:(resolve:(_:T)->Void, reject:(_:Error)->Void)->Void){
+        executor(resolve: onFulfilled, reject: onRejected);
     }
     
     init(_ executor:(resolve:(_:T)->Void)->Void){
@@ -67,8 +67,6 @@ class Promise<T>{
             return self
         })
     }
-
-    func error(){}
     
     private func onFulfilled(value:T) -> Void {
         if let fulfilmentHandler = self.fulfilmentHandler {
@@ -76,7 +74,7 @@ class Promise<T>{
             let fulfillmentPromise = fulfilmentHandler(value)
 
             if fulfillmentPromise.state == .pending{
-                fulfillmentPromise.fulfillmentUpChainPromise = self
+                fulfillmentPromise.upChainPromise = self
             }
             else if fulfillmentPromise.state == .fulfilled {
                 onFulfilled(value: fulfillmentPromise.resolvedValue!)
@@ -87,19 +85,46 @@ class Promise<T>{
             resolvedValue = value;
         }
 
-        if let fulfillmentUpChainPromise = self.fulfillmentUpChainPromise {
+        if let fulfillmentUpChainPromise = self.upChainPromise {
             fulfillmentUpChainPromise.onFulfilled(value: value)
         }
     }
     
-    func onReject(reason:Error)->Void{
-        state = .rejected;
-        rejectReason = reason;
+    func `catch`(onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
+        if state == .rejected {
+            return reject(rejectReason!)
+        }
+        
+        rejectionHandler = reject
+        return self
     }
-}
-
-enum State{
-    case pending
-    case fulfilled
-    case rejected
+    
+    func `catch`(onRejected reject:(_:Error)->Void)->Promise<T>{
+        return `catch`(onRejected: {(reason:Error)->Promise<T> in
+            reject(reason)
+            return self
+        })
+    }
+    
+    func onRejected(reason:Error)->Void{
+        if let rejectionHandler = self.rejectionHandler {
+            self.rejectionHandler = nil;
+            let rejectionPromise = rejectionHandler(error: reason)
+            
+            if rejectionPromise.state == .pending{
+                rejectionPromise.upChainPromise = self
+            }
+            else if rejectionPromise.state == .rejected {
+                onRejected(reason: rejectionPromise.rejectReason!)
+            }
+        }
+        else{
+            state = .rejected;
+            rejectReason = reason;
+        }
+        
+        if let rejectionUpChainPromise = self.upChainPromise {
+            rejectionUpChainPromise.onRejected(reason: reason)
+        }
+    }
 }

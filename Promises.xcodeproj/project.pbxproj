@@ -12,6 +12,8 @@
 		8209EB251D5132E200FD10BE /* Promises.h in Headers */ = {isa = PBXBuildFile; fileRef = 8209EB171D5132E200FD10BE /* Promises.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8209EB2F1D51333800FD10BE /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8209EB2E1D51333800FD10BE /* Promise.swift */; };
 		8209EB301D51333800FD10BE /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8209EB2E1D51333800FD10BE /* Promise.swift */; };
+		82ABFB491D5DACB20082748F /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82ABFB481D5DACB20082748F /* State.swift */; };
+		82ABFB4A1D5DB3170082748F /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82ABFB481D5DACB20082748F /* State.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +34,7 @@
 		8209EB221D5132E200FD10BE /* PromisesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromisesTests.swift; sourceTree = "<group>"; };
 		8209EB241D5132E200FD10BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8209EB2E1D51333800FD10BE /* Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
+		82ABFB481D5DACB20082748F /* State.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = State.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +80,7 @@
 				8209EB171D5132E200FD10BE /* Promises.h */,
 				8209EB181D5132E200FD10BE /* Info.plist */,
 				8209EB2E1D51333800FD10BE /* Promise.swift */,
+				82ABFB481D5DACB20082748F /* State.swift */,
 			);
 			path = Promises;
 			sourceTree = "<group>";
@@ -206,6 +210,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8209EB2F1D51333800FD10BE /* Promise.swift in Sources */,
+				82ABFB491D5DACB20082748F /* State.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +220,7 @@
 			files = (
 				8209EB231D5132E200FD10BE /* PromisesTests.swift in Sources */,
 				8209EB301D51333800FD10BE /* Promise.swift in Sources */,
+				82ABFB4A1D5DB3170082748F /* State.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -407,6 +413,7 @@
 				8209EB2A1D5132E200FD10BE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8209EB2B1D5132E200FD10BE /* Build configuration list for PBXNativeTarget "PromisesTests" */ = {
 			isa = XCConfigurationList;
@@ -415,6 +422,7 @@
 				8209EB2D1D5132E200FD10BE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

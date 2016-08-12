@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Promises/Promise.swift"
-            timestampString = "492556819.460008"
+            timestampString = "492679967.374063"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "91"
-            endingLineNumber = "91"
+            startingLineNumber = "89"
+            endingLineNumber = "89"
             landmarkName = "onFulfilled(value:)"
             landmarkType = "7">
             <Locations>
@@ -58,12 +58,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PromisesTests/PromisesTests.swift"
-            timestampString = "492556148.989019"
+            timestampString = "492678154.667678"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "104"
-            endingLineNumber = "104"
-            landmarkName = "testPromiseShouldPerformDeferedFulfillmentInInitializerAndImmediateFulfilmentInThenFunction()"
+            startingLineNumber = "221"
+            endingLineNumber = "221"
+            landmarkName = "testPromiseCouldBeFulfilledAfterRejectionInCatchFunction()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
