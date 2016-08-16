@@ -14,7 +14,7 @@ class Promise<T>{
     var resolvedValue:T? = nil
     var rejectReason:Error? = nil
     var state:State = .pending
-    var fulfilmentHandler:((_:T)->Promise<T>)?
+    var fulfilmentHandler:((_:T)throws->Promise<T>)?
     var rejectionHandler:((error:Error)->Promise<T>)?
     var upChainPromise:Promise<T>?
     
@@ -102,27 +102,39 @@ class Promise<T>{
     
     private init() {}
     
-    init(_ executor:(resolve:(_:T)->Void, reject:(_:Error)->Void)->Void){
-        executor(resolve:onFulfilled, reject:onRejected);
+    init(_ executor:(resolve:(_:T)->Void, reject:(_:Error)->Void)throws->Void){
+        do {
+            try executor(resolve:onFulfilled, reject:onRejected)
+        } catch {
+            onRejected(reason:error)
+        }
     }
     
-    init(_ executor:(resolve:(_:T)->Void)->Void){
-        executor(resolve:onFulfilled);
+    init(_ executor:(resolve:(_:T)->Void)throws->Void){
+        do {
+            try executor(resolve:onFulfilled)
+        } catch {
+            onRejected(reason:error)
+        }
     }
     
     // MARK: methods
     
     
-    func then(onFulfilled resolve:(_:T)->Promise<T>)->Promise<T>{
+    func then(onFulfilled resolve:(_:T)throws->Promise<T>)->Promise<T>{
         if state == .fulfilled {
-            return resolve(resolvedValue!)
+            do {
+                return try resolve(resolvedValue!)
+            } catch {
+                onRejected(reason:error)
+            }
         }
         
         fulfilmentHandler = resolve
         return self
     }
     
-    func then(onFulfilled resolve:(_:T)->Promise<T>, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
+    func then(onFulfilled resolve:(_:T)throws->Promise<T>, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
         if state == .fulfilled {
             return then(onFulfilled:resolve)
         }
@@ -177,20 +189,31 @@ class Promise<T>{
     
     private func onFulfilled(value:T) -> Void {
         if let fulfilmentHandler = self.fulfilmentHandler {
+            self.rejectionHandler = nil;
             self.fulfilmentHandler = nil;
-            let fulfillmentPromise = fulfilmentHandler(value)
             
-            if fulfillmentPromise === self {
+            let fulfillmentPromise:Promise<T>?
+            do {
+                fulfillmentPromise =  try fulfilmentHandler(value)
+            } catch {
+                onRejected(reason:error)
+                return
+            }
+            
+            if fulfillmentPromise! === self {
                 state = .fulfilled;
                 resolvedValue = value;
                 return
             }
 
-            if fulfillmentPromise.state == .pending{
-                fulfillmentPromise.upChainPromise = self
+            if fulfillmentPromise!.state == .pending{
+                fulfillmentPromise!.upChainPromise = self
             }
-            else if fulfillmentPromise.state == .fulfilled {
-                onFulfilled(value:fulfillmentPromise.resolvedValue!)
+            else if fulfillmentPromise!.state == .fulfilled {
+                onFulfilled(value:fulfillmentPromise!.resolvedValue!)
+            }
+            else if fulfillmentPromise!.state == .rejected {
+                onRejected(reason: fulfillmentPromise!.rejectReason!)
             }
         }
         else{
@@ -220,6 +243,7 @@ class Promise<T>{
     func onRejected(reason:Error)->Void{
         if let rejectionHandler = self.rejectionHandler {
             self.rejectionHandler = nil;
+            self.fulfilmentHandler = nil;
             let rejectionPromise = rejectionHandler(error:reason)
             
             if rejectionPromise === self {
@@ -234,6 +258,10 @@ class Promise<T>{
             else if rejectionPromise.state == .rejected {
                 onRejected(reason:rejectionPromise.rejectReason!)
             }
+            else if rejectionPromise.state == .fulfilled {
+                onFulfilled(value:rejectionPromise.resolvedValue!)
+            }
+            
         }
         else{
             state = .rejected;
