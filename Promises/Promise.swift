@@ -10,6 +10,7 @@ import Foundation
 
 class Promise<T>{
     //MARK: properties
+    
     var resolvedValue:T? = nil
     var rejectReason:Error? = nil
     var state:State = .pending
@@ -20,11 +21,6 @@ class Promise<T>{
     //MARK: static functions
     
 
-    
-    
-    static func race(){}
-
-    
     static func resolve(value:T)->Promise<T>{
         let promise = Promise()
         promise.onFulfilled(value:value)
@@ -33,29 +29,28 @@ class Promise<T>{
     
     static func reject(reason:Error)->Promise<T>{
         let promise = Promise()
-        promise.onRejected(reason: reason)
+        promise.onRejected(reason:reason)
         return promise
     }
     
     static func all<S:Sequence where S.Iterator.Element == Promise<T>>(promises:S)->Promise<[T]>{
         let result = Promise<[T]>()
         var arrayOfPromises:[Promise<T>] = []
-        //var index = 0
         var resolvedCount = 0
         
         for promise in promises{
             if promise.state == .rejected{
-                result.onRejected(reason: promise.rejectReason!)
+                result.onRejected(reason:promise.rejectReason!)
                 return result
             }
             
             arrayOfPromises.append(promise)
         }
         
-        var resolvedValues:Array<T?> = [T?](repeating: nil, count: arrayOfPromises.count)
+        var resolvedValues:Array<T?> = [T?](repeating:nil, count:arrayOfPromises.count)
         
         for (index, promise) in arrayOfPromises.enumerated(){
-             arrayOfPromises[index] = promise
+             let _ = promise
                 .then(onFulfilled:{(value:T)->Void in
                     if result.state != .pending {
                         return
@@ -64,17 +59,35 @@ class Promise<T>{
                     resolvedCount += 1
                     resolvedValues[index] = value
                     if arrayOfPromises.count == resolvedCount {
-                        result.onFulfilled(value: resolvedValues.map({$0!}))
+                        result.onFulfilled(value:resolvedValues.map({$0!}))
                     }
                 }, onRejected:{(reason:Error)->Void in
                     if result.state != .pending {
                         return
                     }
-                    result.onRejected(reason: reason)
+                    result.onRejected(reason:reason)
                 })
         }
+
+        return result
+    }
+    
+    static func race<S:Sequence where S.Iterator.Element == Promise<T>>(promises:S)->Promise<T>{
+        let result = Promise<T>()
         
-        
+        for promise in promises{
+            let _ = promise.then(onFulfilled:{(value:T)->Void in
+                if result.state != .pending {
+                    return
+                }
+                result.onFulfilled(value:value)
+            }, onRejected:{(reason:Error)->Void in
+                if result.state != .pending {
+                    return
+                }
+                result.onRejected(reason:reason)
+            })
+        }
         return result
     }
     
@@ -87,16 +100,14 @@ class Promise<T>{
     
     // MARK: initializers
     
-    private init() {
-        
-    }
+    private init() {}
     
     init(_ executor:(resolve:(_:T)->Void, reject:(_:Error)->Void)->Void){
-        executor(resolve: onFulfilled, reject: onRejected);
+        executor(resolve:onFulfilled, reject:onRejected);
     }
     
     init(_ executor:(resolve:(_:T)->Void)->Void){
-        executor(resolve: onFulfilled);
+        executor(resolve:onFulfilled);
     }
     
     // MARK: methods
@@ -125,42 +136,42 @@ class Promise<T>{
     }
     
     func then(onFulfilled resolve:(_:T)->T)->Promise<T>{
-        return then(onFulfilled: {(resolvingValue:T)->Promise<T> in
-            return Promise.resolve(value: resolve(resolvingValue))
+        return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
+            return Promise.resolve(value:resolve(resolvingValue))
         })
     }
     
     func then(onFulfilled resolve:(_:T)->T, onRejected reject:(_:Error)->Void)->Promise<T>{
-        return then(onFulfilled: {(resolvingValue:T)->Promise<T> in
-            return Promise.resolve(value: resolve(resolvingValue))
+        return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
+            return Promise.resolve(value:resolve(resolvingValue))
         }, onRejected:Promise.normalizeVoidHandler(reject:reject, forPromise:self))
     }
     
     func then(onFulfilled resolve:(_:T)->T, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
-        return then(onFulfilled: {(resolvingValue:T)->Promise<T> in
-            return Promise.resolve(value: resolve(resolvingValue))
+        return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
+            return Promise.resolve(value:resolve(resolvingValue))
         }, onRejected:reject)
     }
     
     func then(onFulfilled resolve:(_:T)->Void)->Promise<T>{
-        return then(onFulfilled: {(resolvingValue:T)->Promise<T> in
+        return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             resolve(resolvingValue)
             return self
         })
     }
 
     func then(onFulfilled resolve:(_:T)->Void, onRejected reject:(_:Error)->Void)->Promise<T>{
-        return then(onFulfilled: {(resolvingValue:T)->Promise<T> in
+        return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             resolve(resolvingValue)
             return self
-        },onRejected:Promise.normalizeVoidHandler(reject:reject, forPromise:self))
+        }, onRejected:Promise.normalizeVoidHandler(reject:reject, forPromise:self))
     }
     
     func then(onFulfilled resolve:(_:T)->Void, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
-        return then(onFulfilled: {(resolvingValue:T)->Promise<T> in
+        return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             resolve(resolvingValue)
             return self
-            },onRejected:reject)
+        }, onRejected:reject)
     }
 
     
@@ -179,7 +190,7 @@ class Promise<T>{
                 fulfillmentPromise.upChainPromise = self
             }
             else if fulfillmentPromise.state == .fulfilled {
-                onFulfilled(value: fulfillmentPromise.resolvedValue!)
+                onFulfilled(value:fulfillmentPromise.resolvedValue!)
             }
         }
         else{
@@ -188,7 +199,7 @@ class Promise<T>{
         }
 
         if let fulfillmentUpChainPromise = self.upChainPromise {
-            fulfillmentUpChainPromise.onFulfilled(value: value)
+            fulfillmentUpChainPromise.onFulfilled(value:value)
         }
     }
     
@@ -202,15 +213,14 @@ class Promise<T>{
     }
     
     func `catch`(onRejected reject:(_:Error)->Void)->Promise<T>{
-        
         let onRejected =  Promise.normalizeVoidHandler(reject:reject, forPromise:self)
-        return `catch`(onRejected: onRejected)
+        return `catch`(onRejected:onRejected)
     }
     
     func onRejected(reason:Error)->Void{
         if let rejectionHandler = self.rejectionHandler {
             self.rejectionHandler = nil;
-            let rejectionPromise = rejectionHandler(error: reason)
+            let rejectionPromise = rejectionHandler(error:reason)
             
             if rejectionPromise === self {
                 state = .rejected;
@@ -222,7 +232,7 @@ class Promise<T>{
                 rejectionPromise.upChainPromise = self
             }
             else if rejectionPromise.state == .rejected {
-                onRejected(reason: rejectionPromise.rejectReason!)
+                onRejected(reason:rejectionPromise.rejectReason!)
             }
         }
         else{
@@ -231,7 +241,7 @@ class Promise<T>{
         }
         
         if let rejectionUpChainPromise = self.upChainPromise {
-            rejectionUpChainPromise.onRejected(reason: reason)
+            rejectionUpChainPromise.onRejected(reason:reason)
         }
     }
 }
