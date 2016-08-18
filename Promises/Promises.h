@@ -3,7 +3,7 @@
 //  Promises
 //
 //  Created by Iukhym Goncharuk on 8/2/16.
-//  Copyright © 2016 Iukhym Goncharuk. All rights reserved.
+//  Copyright © 2016 Efim Goncharuk. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>

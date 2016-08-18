@@ -79,7 +79,7 @@ class PromisesTests: XCTestCase {
     
     func testPromiseShouldAcceptDeferedFulfillmentInInitializer() {
         let expect = expectation(description: "promise has been resolved")
-        let p1 = Promise({(resolve:(Int)->Void, nil) in
+        let p1 = Promise<Int>({(resolve:@escaping (Int)->Void) in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                 resolve(2)
                 expect.fulfill()
@@ -98,7 +98,7 @@ class PromisesTests: XCTestCase {
     func testPromiseShouldPerformDeferedFulfillmentInInitializerAndImmediateFulfilmentInThenFunction() {
         let expect = expectation(description: "promise has been resolved")
         
-        let p1 = Promise({(resolve:(Int)->Void) in
+        let p1 = Promise({(resolve:@escaping (Int)->Void) in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                 resolve(2)
             }
@@ -128,7 +128,7 @@ class PromisesTests: XCTestCase {
             }
         }).then(onFulfilled: {val -> Promise<Int> in
             XCTAssertEqual(val, 2)
-            let result = Promise({(resolve:(Int)->Void) in
+            let result = Promise<Int>({(resolve:@escaping (Int)->Void) in
                 DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                     resolve(7)
                     expect.fulfill()
@@ -155,9 +155,9 @@ class PromisesTests: XCTestCase {
             XCTAssert(false)
             }, onRejected:{(reason: Error) -> Promise<Int> in
                 print("rejected")
-                XCTAssertEqual(String(reason), String(TestError.test))
+                XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
                 return Promise<Int>({resolve, reject in
-                    DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
+                    DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: DispatchTime.now() + .seconds(1), qos: .default, flags: .inheritQoS){
                         resolve(7)
                         expect.fulfill()
                     }
@@ -186,7 +186,7 @@ class PromisesTests: XCTestCase {
             XCTAssert(false)
             }, onRejected:{(reason: Error) -> Promise<Int> in
                 print("rejected")
-                XCTAssertEqual(String(reason), String(TestError.test))
+                XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
                 return Promise<Int>({resolve, _ in
                     resolve(7)
                     expect.fulfill()
@@ -214,7 +214,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     func testPromiseShouldDoDeferedRejectionInInitializer() {
@@ -233,7 +233,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     func testPromiseShouldPerformRejectionInThenFunction() {
@@ -261,7 +261,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     func testPromiseShouldCatchImmediateRejectitionInCatchFunction() {
@@ -271,13 +271,13 @@ class PromisesTests: XCTestCase {
             XCTAssert(false)
         }).catch(onRejected:{(reason:Error)->Void in
             print("rejected")
-            XCTAssertEqual(String(reason), String(TestError.test))
+            XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
         })
         
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     func testPromiseCouldBeFulfilledAfterRejectionInCatchFunction() {
@@ -289,7 +289,7 @@ class PromisesTests: XCTestCase {
             XCTAssert(false)
         }).catch(onRejected:{(reason: Error) -> Promise<Int> in
             print("rejected")
-            XCTAssertEqual(String(reason), String(TestError.test))
+            XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
             return Promise<Int>({resolve, reject in
                 DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                     resolve(7)
@@ -316,13 +316,13 @@ class PromisesTests: XCTestCase {
             XCTAssert(false)
         }, onRejected:{(reason: Error) -> Void in
             print("rejected")
-            XCTAssertEqual(String(reason), String(TestError.test))
+            XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
         })
         
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     func testPromiseCouldBeRejectedAfterFulfilmentInThenFunction() {
@@ -350,7 +350,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
 
     func testPromiseCouldBeRejectedAfterFulfilmentInThenFunction2() {
@@ -377,7 +377,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
 
     // MARK: Promise.all
@@ -385,18 +385,18 @@ class PromisesTests: XCTestCase {
     func testPromiseAllShoudBeFullfilledOnceAllProsisesAreFulfilled() {
         let expect = expectation(description: "promise has been fulfilled")
         var promises:Array<Promise<Int>> = []
-        promises.append(Promise({(resolve:(Int)->Void, _) in
+        promises.append(Promise({resolve in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(2), qos: .default, flags: .inheritQoS){
                 resolve(1)
             }
         }))
 
         
-        promises.append(Promise({(resolve:(Int)->Void, _) in
+        promises.append(Promise({resolve in
             resolve(2)
         }))
         
-        promises.append(Promise({(resolve:(Int)->Void, _) in
+        promises.append(Promise({resolve in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                 resolve(3)
                 
@@ -430,11 +430,11 @@ class PromisesTests: XCTestCase {
         }))
         
         
-        promises.append(Promise({(resolve:(Int)->Void, nil) in
+        promises.append(Promise({resolve in
             resolve(2)
         }))
         
-        promises.append(Promise({(resolve:(Int)->Void, nil) in
+        promises.append(Promise({resolve in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                 resolve(3)
                 
@@ -452,7 +452,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     // MARK: Promise.race
@@ -467,11 +467,11 @@ class PromisesTests: XCTestCase {
         }))
         
         
-        promises.append(Promise({(resolve:(Int)->Void, _) in
+        promises.append(Promise({resolve in
             resolve(2)
         }))
         
-        promises.append(Promise({(resolve:(Int)->Void, _) in
+        promises.append(Promise({resolve in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(1), qos: .default, flags: .inheritQoS){
                 resolve(3)
                 
@@ -505,7 +505,7 @@ class PromisesTests: XCTestCase {
         }))
         
         
-        promises.append(Promise({(resolve:(Int)->Void, nil) in
+        promises.append(Promise<Int>({resolve in
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(2), qos: .default, flags: .inheritQoS){
                 resolve(3)
             }
@@ -522,7 +522,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     // MARK: throw
@@ -535,7 +535,7 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
     
     func testPromiseShouldCatchErrorThrownInThenFunction() {
@@ -564,6 +564,6 @@ class PromisesTests: XCTestCase {
         XCTAssertNotNil(p1)
         XCTAssertNil(p1.resolvedValue)
         XCTAssertNotNil(p1.rejectReason)
-        XCTAssertEqual(String(p1.rejectReason!), String(TestError.test))
+        XCTAssertEqual(String(describing:p1.rejectReason!), String(describing:TestError.test))
     }
 }

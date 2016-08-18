@@ -14,8 +14,8 @@ class Promise<T>{
     var resolvedValue:T? = nil
     var rejectReason:Error? = nil
     var state:State = .pending
-    var fulfilmentHandler:((_:T)throws->Promise<T>)?
-    var rejectionHandler:((error:Error)->Promise<T>)?
+    var fulfilmentHandler:((T)throws->Promise<T>)?
+    var rejectionHandler:((Error)->Promise<T>)?
     var upChainPromise:Promise<T>?
     
     //MARK: static functions
@@ -33,7 +33,7 @@ class Promise<T>{
         return promise
     }
     
-    static func all<S:Sequence where S.Iterator.Element == Promise<T>>(promises:S)->Promise<[T]>{
+    static func all<S:Sequence>(promises:S)->Promise<[T]> where S.Iterator.Element == Promise<T>{
         let result = Promise<[T]>()
         var arrayOfPromises:[Promise<T>] = []
         var resolvedCount = 0
@@ -72,7 +72,7 @@ class Promise<T>{
         return result
     }
     
-    static func race<S:Sequence where S.Iterator.Element == Promise<T>>(promises:S)->Promise<T>{
+    static func race<S:Sequence>(promises:S)->Promise<T> where S.Iterator.Element == Promise<T>{
         let result = Promise<T>()
         
         for promise in promises{
@@ -91,7 +91,7 @@ class Promise<T>{
         return result
     }
     
-    private static func normalizeVoidHandler(reject handler:(_:Error)->Void, forPromise promise:Promise<T>)->(_:Error)->Promise<T>{
+    private static func normalizeVoidHandler(reject handler:@escaping (Error)->Void, forPromise promise:Promise<T>)->(Error)->Promise<T>{
         return {(reason:Error)->Promise<T> in
             handler(reason)
             return promise
@@ -102,26 +102,25 @@ class Promise<T>{
     
     private init() {}
     
-    init(_ executor:(resolve:(_:T)->Void, reject:(_:Error)->Void)throws->Void){
+    init(_ executor:(@escaping (T)->Void, @escaping (Error)->Void)throws->Void){
         do {
-            try executor(resolve:onFulfilled, reject:onRejected)
+            try executor(onFulfilled, onRejected)
         } catch {
             onRejected(reason:error)
         }
     }
     
-    init(_ executor:(resolve:(_:T)->Void)throws->Void){
+    init(_ executor:(@escaping (T)->Void)throws->Void){
         do {
-            try executor(resolve:onFulfilled)
+            try executor(onFulfilled)
         } catch {
             onRejected(reason:error)
         }
     }
     
     // MARK: methods
-    
-    
-    func then(onFulfilled resolve:(_:T)throws->Promise<T>)->Promise<T>{
+
+    func then(onFulfilled resolve:@escaping (T)throws->Promise<T>)->Promise<T>{
         if state == .fulfilled {
             do {
                 return try resolve(resolvedValue!)
@@ -134,7 +133,7 @@ class Promise<T>{
         return self
     }
     
-    func then(onFulfilled resolve:(_:T)throws->Promise<T>, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)throws->Promise<T>, onRejected reject:@escaping (Error)->Promise<T>)->Promise<T>{
         if state == .fulfilled {
             return then(onFulfilled:resolve)
         }
@@ -147,39 +146,39 @@ class Promise<T>{
         return self
     }
     
-    func then(onFulfilled resolve:(_:T)->T)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)->T)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             return Promise.resolve(value:resolve(resolvingValue))
         })
     }
     
-    func then(onFulfilled resolve:(_:T)->T, onRejected reject:(_:Error)->Void)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)->T, onRejected reject:@escaping (Error)->Void)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             return Promise.resolve(value:resolve(resolvingValue))
         }, onRejected:Promise.normalizeVoidHandler(reject:reject, forPromise:self))
     }
     
-    func then(onFulfilled resolve:(_:T)->T, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)->T, onRejected reject:@escaping (Error)->Promise<T>)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             return Promise.resolve(value:resolve(resolvingValue))
         }, onRejected:reject)
     }
     
-    func then(onFulfilled resolve:(_:T)->Void)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)->Void)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             resolve(resolvingValue)
             return self
         })
     }
 
-    func then(onFulfilled resolve:(_:T)->Void, onRejected reject:(_:Error)->Void)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)->Void, onRejected reject:@escaping (Error)->Void)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             resolve(resolvingValue)
             return self
         }, onRejected:Promise.normalizeVoidHandler(reject:reject, forPromise:self))
     }
     
-    func then(onFulfilled resolve:(_:T)->Void, onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
+    func then(onFulfilled resolve:@escaping (T)->Void, onRejected reject:@escaping (_:Error)->Promise<T>)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             resolve(resolvingValue)
             return self
@@ -226,7 +225,7 @@ class Promise<T>{
         }
     }
     
-    func `catch`(onRejected reject:(_:Error)->Promise<T>)->Promise<T>{
+    func `catch`(onRejected reject:@escaping (Error)->Promise<T>)->Promise<T>{
         if state == .rejected {
             return reject(rejectReason!)
         }
@@ -235,7 +234,7 @@ class Promise<T>{
         return self
     }
     
-    func `catch`(onRejected reject:(_:Error)->Void)->Promise<T>{
+    func `catch`(onRejected reject:@escaping (Error)->Void)->Promise<T>{
         let onRejected =  Promise.normalizeVoidHandler(reject:reject, forPromise:self)
         return `catch`(onRejected:onRejected)
     }
@@ -244,7 +243,7 @@ class Promise<T>{
         if let rejectionHandler = self.rejectionHandler {
             self.rejectionHandler = nil;
             self.fulfilmentHandler = nil;
-            let rejectionPromise = rejectionHandler(error:reason)
+            let rejectionPromise = rejectionHandler(reason)
             
             if rejectionPromise === self {
                 state = .rejected;
