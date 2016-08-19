@@ -7,9 +7,9 @@
 //
 
 import XCTest
-@testable import Promises
+@testable import Promise
 
-class PromisesTests: XCTestCase {
+class PromiseTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
