@@ -25,7 +25,7 @@ class PromiseTests: XCTestCase {
         case test
     }
     
-    func deferExecution(in seconds:Int, execute work: @escaping @convention(block) () -> Swift.Void){
+    func deferExecution(in seconds:Int, execute work: @escaping @convention(block) ()->Swift.Void){
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + .seconds(seconds), qos: .default, flags: .inheritQoS, execute:work);
     }
     
@@ -44,7 +44,7 @@ class PromiseTests: XCTestCase {
     func testPromiseShouldBeFulfilledInThenFunctionByReturningPlainValue() {
         let p1 = Promise({resolve in
             resolve(2)
-        }).then(onFulfilled: {val -> Int in
+        }).then(onFulfilled: {val->Int in
             XCTAssertEqual(val, 2)
             return 7
         })
@@ -57,7 +57,7 @@ class PromiseTests: XCTestCase {
     func testPromiseShouldBeFulfilledInThenFunctionByReturningAnotherResolvedPromise() {
         let p1 = Promise({resolve in
             resolve(2)
-        }).then(onFulfilled: {val -> Promise<Int> in
+        }).then(onFulfilled: {val->Promise<Int> in
             XCTAssertEqual(val, 2)
             return Promise({resolve in
                 resolve(8)
@@ -72,7 +72,7 @@ class PromiseTests: XCTestCase {
     func testPromiseShouldBeFulfilledInThenFunctionByReturningVoid() {
         let p1 = Promise({resolve in
             resolve(2)
-        }).then(onFulfilled: {(val:Int) -> Void in
+        }).then(onFulfilled: {(val:Int)->Void in
             XCTAssertEqual(val, 2)
         })
         
@@ -85,7 +85,7 @@ class PromiseTests: XCTestCase {
         let expect = expectation(description: "promise has been resolved")
         let p1 = Promise<Int>({(resolve:@escaping (Int)->Void) in
             deferExecution(in:1){resolve(2)}
-        }).then(onFulfilled: {(val:Int) -> Void in
+        }).then(onFulfilled: {(val:Int)->Void in
             defer{expect.fulfill()}
             XCTAssertEqual(val, 2)
         })
@@ -104,7 +104,7 @@ class PromiseTests: XCTestCase {
         
         let p1 = Promise({(resolve:@escaping (Int)->Void) in
             deferExecution(in:1){resolve(2)}
-        }).then(onFulfilled: {val -> Int in
+        }).then(onFulfilled: {val->Int in
             defer{expect.fulfill()}
             XCTAssertEqual(val, 2)
             return 7
@@ -126,7 +126,7 @@ class PromiseTests: XCTestCase {
             deferExecution(in:1){
                 resolve(2)
             }
-        }).then(onFulfilled: {val -> Promise<Int> in
+        }).then(onFulfilled: {val->Promise<Int> in
             XCTAssertEqual(val, 2)
             return Promise<Int>({(resolve:@escaping (Int)->Void) in
                 self.deferExecution(in:1){
@@ -152,7 +152,7 @@ class PromiseTests: XCTestCase {
             reject(TestError.test)
         }).then(onFulfilled:{(_:Int)->Void in
             XCTAssert(false)
-            }, onRejected:{(reason: Error) -> Promise<Int> in
+            }, onRejected:{(reason: Error)->Promise<Int> in
                 print("rejected")
                 XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
                 return Promise<Int>({resolve, reject in
@@ -182,7 +182,7 @@ class PromiseTests: XCTestCase {
             }
         }).then(onFulfilled:{(_:Int)->Void in
             XCTAssert(false)
-            }, onRejected:{(reason: Error) -> Promise<Int> in
+            }, onRejected:{(reason: Error)->Promise<Int> in
                 print("rejected")
                 XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
                 return Promise<Int>({resolve, _ in
@@ -201,7 +201,7 @@ class PromiseTests: XCTestCase {
         XCTAssertEqual(p1.resolvedValue!, 7)
     }
     
-    func testPromiseShouldGoThrough() {
+    func testPromiseShouldGoThroughChain() {
         let expect = expectation(description: "promise has been resolved")
         
         var x = 0
@@ -214,7 +214,7 @@ class PromiseTests: XCTestCase {
             .then(onFulfilled:{val in
             val + 1
         })
-            .then(onFulfilled: {val -> Int in
+            .then(onFulfilled: {val->Int in
             defer {expect.fulfill()}
             return val + 1
         })
@@ -269,15 +269,14 @@ class PromiseTests: XCTestCase {
             deferExecution(in:1){
                 resolve(2)
             }
-        }).then(onFulfilled: {val -> Promise<Int> in
+        }).then(onFulfilled: {val->Promise<Int> in
             XCTAssertEqual(val, 2)
-            let result = Promise<Int>({_, reject in
+            return Promise<Int>({_, reject in
                 self.deferExecution(in:1){
                     reject(TestError.test)
                     expect.fulfill()
                 }
             })
-            return result
         })
         
         waitForExpectations(timeout: 2.5) { error in
@@ -313,7 +312,7 @@ class PromiseTests: XCTestCase {
             reject(TestError.test)
         }).then(onFulfilled:{_ in
             XCTAssert(false)
-        }).catch(onRejected:{(reason: Error) -> Promise<Int> in
+        }).catch(onRejected:{(reason: Error)->Promise<Int> in
             print("rejected")
             XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
             return Promise<Int>({resolve, reject in
@@ -340,7 +339,7 @@ class PromiseTests: XCTestCase {
             reject(TestError.test)
         }).then(onFulfilled:{_ in
             XCTAssert(false)
-        }, onRejected:{(reason: Error) -> Void in
+        }, onRejected:{(reason: Error)->Void in
             print("rejected")
             XCTAssertEqual(String(describing:reason), String(describing:TestError.test))
         })
@@ -356,15 +355,14 @@ class PromiseTests: XCTestCase {
         
         let p1 = Promise({resolve in
             deferExecution(in:1){resolve(2)}
-        }).then(onFulfilled: {val -> Promise<Int> in
+        }).then(onFulfilled: {val->Promise<Int> in
             XCTAssertEqual(val, 2)
-            let result = Promise<Int>({_, reject in
+            return Promise<Int>({_, reject in
                 self.deferExecution(in:1){
                     reject(TestError.test)
                     expect.fulfill()
                 }
             })
-            return result
         })
         
         waitForExpectations(timeout: 2.2) { error in
@@ -382,13 +380,12 @@ class PromiseTests: XCTestCase {
         
         let p1 = Promise({resolve in
             deferExecution(in:1){resolve(2)}
-        }).then(onFulfilled: {val -> Promise<Int> in
+        }).then(onFulfilled: {val->Promise<Int> in
             XCTAssertEqual(val, 2)
-            let result = Promise<Int>({_, reject in
+            return Promise<Int>({_, reject in
                 reject(TestError.test)
                 expect.fulfill()
             })
-            return result
         })
 
         waitForExpectations(timeout: 1.2) { error in
@@ -406,17 +403,9 @@ class PromiseTests: XCTestCase {
     func testPromiseAllShoudBeFullfilledOnceAllProsisesAreFulfilled() {
         let expect = expectation(description: "promise has been fulfilled")
         var promises:Array<Promise<Int>> = []
-        promises.append(Promise({resolve in
-            deferExecution(in:2){resolve(1)}
-        }))
-
-        promises.append(Promise({resolve in
-            resolve(2)
-        }))
-        
-        promises.append(Promise({resolve in
-            deferExecution(in:1){resolve(3)}
-        }))
+        promises.append(Promise({resolve in deferExecution(in:2){resolve(1)}}))
+        promises.append(Promise({resolve in resolve(2)}))
+        promises.append(Promise({resolve in deferExecution(in:1){resolve(3)}}))
         
         let p1 = Promise.all(promises: promises).then(onFulfilled:{(value:[Int])->Void in
             print("ALL then");
@@ -439,16 +428,9 @@ class PromiseTests: XCTestCase {
     func testPromiseAllShoudBeRejectedOnceOneOfProsisesGetRejected() {
         let expect = expectation(description: "promise has been rejected")
         var promises:Array<Promise<Int>> = []
-        promises.append(Promise<Int>({_, reject in
-            deferExecution(in:1){reject(TestError.test)}
-        }))
+        promises.append(Promise<Int>({_, reject in deferExecution(in:1){reject(TestError.test)}}))
         promises.append(Promise({resolve in resolve(2)}))
-        promises.append(Promise({resolve in
-            deferExecution(in:1){
-                resolve(3)
-                
-            }
-        }))
+        promises.append(Promise({resolve in deferExecution(in:1){resolve(3)}}))
         
         let p1 = Promise.all(promises: promises).catch(onRejected:{reason in
             expect.fulfill()
@@ -469,12 +451,7 @@ class PromiseTests: XCTestCase {
     func testPromiseRaceShoudBeFullfilledOnceAnyPromiseFulfilled() {
         let expect = expectation(description: "promise has been fulfilled")
         var promises:Array<Promise<Int>> = []
-        promises.append(Promise({(resolve:(Int)->Void, reject) in
-            deferExecution(in:2){
-                reject(TestError.test)
-            }
-        }))
-        
+        promises.append(Promise({_, reject in deferExecution(in:2){reject(TestError.test)}}))
         promises.append(Promise({resolve in resolve(2)}))
         promises.append(Promise({resolve in deferExecution(in:1){resolve(3)}}))
         
@@ -498,15 +475,8 @@ class PromiseTests: XCTestCase {
     func testPromiseRaceShoudBeRejectedOnceOneOfProsisesGetRejected() {
         let expect = expectation(description: "promise has been rejected")
         var promises:Array<Promise<Int>> = []
-        promises.append(Promise<Int>({_, reject in
-            deferExecution(in:1){reject(TestError.test)}
-        }))
-        
-        promises.append(Promise<Int>({resolve in
-            deferExecution(in:2){
-                resolve(3)
-            }
-        }))
+        promises.append(Promise<Int>({_, reject in deferExecution(in:1){reject(TestError.test)}}))
+        promises.append(Promise<Int>({resolve in deferExecution(in:2){resolve(3)}}))
         
         let p1 = Promise.race(promises: promises).catch(onRejected:{reason in
             expect.fulfill()
@@ -525,7 +495,7 @@ class PromiseTests: XCTestCase {
     // MARK: throw
     
     func testPromiseShouldCatchErrorThrownInInitializer() {
-        let p1 = Promise({(_:(Int)->Void) in
+        let p1 = Promise<String>({_, _ in
             throw TestError.test
         })
         
@@ -539,18 +509,14 @@ class PromiseTests: XCTestCase {
         let expect = expectation(description: "promise has been resolved")
 
         let p1 = Promise({resolve in
-            deferExecution(in:1){
-                resolve(2)
-            }
-        }).then(onFulfilled: {val -> Promise<Int> in
+            deferExecution(in:1){resolve(2)}
+        }).then(onFulfilled: {val->Promise<Int> in
             XCTAssertEqual(val, 2)
-            let result = Promise<Int>({_, reject in
+            return Promise({_, _ in
                 defer{expect.fulfill()}
                 throw TestError.test
             })
-            return result
         })
-        
         
         waitForExpectations(timeout: 2.2) { error in
             XCTAssertNil(error)

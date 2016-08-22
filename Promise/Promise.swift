@@ -57,14 +57,12 @@ public class Promise<T>{
                     resolvedCount += 1
                     resolvedValues[index] = value
                     if arrayOfPromises.count == resolvedCount {
-                        print("!!!resolving!!!!")
                         result.onFulfilled(value:resolvedValues.map({$0!}))
                     }
                 }, onRejected:{(reason:Error)->Void in
                     if result.state != .pending {
                         return
                     }
-                    print("!!!rejecting!!!!")
                     result.onRejected(reason:reason)
                 })
         }
@@ -154,6 +152,10 @@ public class Promise<T>{
         return then(onFulfilled:{resolvingValue in self}, onRejected:reject)
     }
     
+    public func then(onRejected reject:@escaping (Error)->Void)->Promise<T>{
+        return then(onRejected:Promise.normalizeVoidHandler(reject: reject))
+    }
+    
     public func then(onFulfilled resolve:@escaping (T)->T)->Promise<T>{
         return then(onFulfilled:{(resolvingValue:T)->Promise<T> in
             return Promise.resolve(value:resolve(resolvingValue))
@@ -192,7 +194,7 @@ public class Promise<T>{
         return then(onRejected:Promise.normalizeVoidHandler(reject:reject))
     }
     
-    private func onFulfilled(value:T) -> Void {
+    private func onFulfilled(value:T)->Void {
         if let fulfilmentHandler = self.fulfilmentHandler {
             self.rejectionHandler = nil;
             self.fulfilmentHandler = nil;
