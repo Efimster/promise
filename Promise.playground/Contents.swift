@@ -1,13 +1,9 @@
 //: Playground - noun: a place where people can play
 
 import Promise
-import XCPlayground
+import PlaygroundSupport
 
-XCPlaygroundPage.currentPage.needsIndefiniteExecution = true
-
-enum PromiseError:Error{
-    case timeout
-}
+PlaygroundPage.current.needsIndefiniteExecution = true
 
 Promise.resolve(value: "Hello, promise").resolvedValue
 Promise<String>.reject(reason: PromiseError.timeout).rejectReason
@@ -136,5 +132,5 @@ let _ = Promise({resolve in
     let rejectedReason = reason
 })
 
-deferExecution(in:2){XCPlaygroundPage.currentPage.finishExecution()}
+deferExecution(in:2){PlaygroundPage.current.finishExecution()}
 
