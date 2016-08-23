@@ -5,8 +5,12 @@ import PlaygroundSupport
 
 PlaygroundPage.current.needsIndefiniteExecution = true
 
-Promise.resolve(value: "Hello, promise").resolvedValue
-Promise<String>.reject(reason: PromiseError.timeout).rejectReason
+Promise.resolve(value: "Hello, promise").then(onFulfilled:{value->Void in
+    let resolvedValue = value
+})
+Promise<String>.reject(reason: PromiseError.timeout).then(onRejected:{reason->Void in
+    let rejectedReason = reason
+})
 
 // MARK: fulfillment
 
